@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DynamicShelf | Smart Pricing</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+
+<body>
+
+<div class="background-shape shape1"></div>
+<div class="background-shape shape2"></div>
+
+
+<div class="container">
+
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <div class="logo">DS</div>
+
+        <div>
+
+            <h1>DynamicShelf</h1>
+
+            <p>Smart Pricing for Near-Expiry Products</p>
+
+        </div>
+
+    </div>
+    <!-- DASHBOARD SUMMARY -->
+
+<div class="dashboard-summary">
+
+    <div class="summary-card">
+
+        <div class="summary-icon">📦</div>
+
+        <span>Total Predictions</span>
+
+        <strong>{{ total_predictions }}</strong>
+
+    </div>
+
+
+    <div class="summary-card">
+
+        <div class="summary-icon">📉</div>
+
+        <span>Average Discount</span>
+
+        <strong>{{ average_discount }}%</strong>
+
+    </div>
+
+
+    <div class="summary-card">
+
+        <div class="summary-icon">💰</div>
+
+        <span>Average Recommended Price</span>
+
+        <strong>₹{{ average_price }}</strong>
+
+    </div>
+
+</div>
+
+
+    <!-- MAIN CARD -->
+
+    <div class="main-card">
+
+        <div class="card-heading">
+
+            <span class="badge">SMART ANALYSIS</span>
+
+            <h2>Product Pricing Details</h2>
+
+            <p>
+                Scan a product label or enter product information
+                to get a dynamic discount recommendation.
+            </p>
+
+        </div>
+
+
+        <!-- OCR SCANNER -->
+
+        <div class="scan-section">
+
+            <span class="badge">OCR PRODUCT SCANNER</span>
+
+            <h2>Scan Product Label</h2>
+
+            <p>
+                Upload a product label image to automatically
+                extract available information.
+            </p>
+
+
+            <form action="/scan"
+                  method="POST"
+                  enctype="multipart/form-data">
+
+                <input
+                    type="file"
+                    name="image"
+                    accept="image/*"
+                    required
+                >
+
+                <button type="submit">
+                    Scan Product →
+                </button>
+
+            </form>
+
+
+            {% if extracted_text %}
+
+            <div class="extracted-text">
+
+                <h3>🔍 Extracted Information</h3>
+
+                <p>{{ extracted_text }}</p>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- PREDICTION FORM -->
+
+        <form action="/predict" method="POST">
+
+            <div class="input-grid">
+
+
+                <!-- CATEGORY -->
+
+                <div class="input-group">
+
+                    <label>Product Category</label>
+
+                    <input
+                        type="text"
+                        name="category"
+                        value="{{ extracted_category | default('') }}"
+                        placeholder="Example: Dairy"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- EXPIRY -->
+
+                <div class="input-group">
+
+                    <label>Expiry Date</label>
+
+                    <input
+                        type="date"
+                        name="expiry_date"
+                        value="{{ extracted_expiry | default('') }}"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- PRICE -->
+
+                <div class="input-group">
+
+                    <label>Original Price (₹)</label>
+
+                    <input
+                        type="number"
+                        name="base_price"
+                        step="0.01"
+                        value="{{ extracted_price | default('') }}"
+                        placeholder="Example: 100"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- STOCK -->
+
+                <div class="input-group">
+
+                    <label>Stock Quantity</label>
+
+                    <input
+                        type="number"
+                        name="stock_quantity"
+                        placeholder="Example: 50"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- DEMAND -->
+
+                <div class="input-group">
+
+                    <label>Daily Demand</label>
+
+                    <input
+                        type="number"
+                        name="daily_demand"
+                        step="0.01"
+                        placeholder="Example: 15"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- SPOILAGE -->
+
+                <div class="input-group">
+
+                    <label>Spoilage Risk (0–1)</label>
+
+                    <input
+                        type="number"
+                        name="spoilage_risk"
+                        step="0.01"
+                        min="0"
+                        max="1"
+                        placeholder="Example: 0.8"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+
+            <button type="submit">
+                Analyze & Predict →
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- RESULT SECTION -->
+
+    {% if prediction %}
+
+    <div class="result-card">
+
+        <div class="result-icon">✓</div>
+
+        <div class="result-content">
+
+            <span class="badge result-badge">
+                SMART RECOMMENDATION READY
+            </span>
+
+            <h2>DynamicShelf Recommendation</h2>
+
+            <p class="result-message">
+                Based on the product expiry information and dynamic
+                pricing analysis, DynamicShelf recommends the
+                following price.
+            </p>
+
+
+            <div class="result-grid">
+
+
+                <div class="result-box">
+
+                    <span>🏷️ Product Category</span>
+
+                    <strong>
+                        {{ extracted_category or 'Not detected' }}
+                    </strong>
+
+                </div>
+
+
+                <div class="result-box">
+
+                    <span>💰 Original Price</span>
+
+                    <strong>
+                        ₹{{ extracted_price or 'Not detected' }}
+                    </strong>
+
+                </div>
+
+
+                <div class="result-box">
+
+                    <span>📅 Expiry Date</span>
+
+                    <strong>
+                        {{ extracted_expiry or 'Not detected' }}
+                    </strong>
+
+                </div>
+<div class="result-box">
+
+    <span>⏳ Days Until Expiry</span>
+
+    <strong>
+        {{ days_left }} Days
+    </strong>
+
+</div>
+
+
+<div class="result-box">
+
+    <span>📌 Expiry Status</span>
+
+    <strong class="
+        {% if expiry_status == 'Safe' %}
+            status-safe
+        {% elif expiry_status == 'Expiring Soon' %}
+            status-soon
+        {% elif expiry_status == 'Critical' %}
+            status-critical
+        {% endif %}
+    ">
+        {{ expiry_status }}
+    </strong>
+
+</div>
+
+
+<div class="result-box">
+
+    <span>📉 Recommended Discount</span>
+
+    <strong>
+        {{ discount }}%
+    </strong>
+
+    <div class="discount-bar">
+
+        <div class="discount-fill"
+             style="width: {{ discount }}%;">
+        </div>
+
+    </div>
+
+</div>
+
+
+                <div class="result-box">
+
+                    <span>💵 Recommended Selling Price</span>
+
+                    <strong>
+                        ₹{{ price }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="waste-message">
+
+                ♻️ Smart pricing recommendation generated to help
+                reduce product wastage and improve inventory management.
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ==========================================
+         PREDICTION HISTORY
+         ========================================== -->
+
+    <div class="main-card">
+
+        <div class="card-heading">
+
+            <span class="badge">PREDICTION HISTORY</span>
+
+            <h2>Previous Analyses</h2>
+
+            <p>
+                View previous DynamicShelf pricing recommendations.
+            </p>
+            <a href="/clear-history"
+   onclick="return confirm('Are you sure you want to clear all prediction history?');"
+   style="
+       display:inline-block;
+       margin-top:15px;
+       padding:10px 20px;
+       background:#d9534f;
+       color:white;
+       text-decoration:none;
+       border-radius:8px;
+       font-weight:bold;
+   ">
+    🗑️ Clear History
+</a>
+
+        </div>
+
+
+        {% if history %}
+
+        <!-- HISTORY TABLE -->
+
+        <div style="overflow-x:auto;">
+
+            <table style="
+                width:100%;
+                border-collapse:collapse;
+                text-align:center;
+            ">
+
+                <thead>
+
+                    <tr>
+
+                        <th style="padding:15px;">
+                            Category
+                        </th>
+
+                        <th style="padding:15px;">
+                            Original Price
+                        </th>
+
+                        <th style="padding:15px;">
+                            Expiry Date
+                        </th>
+
+                        <th style="padding:15px;">
+                            Days Left
+                        </th>
+
+                        <th style="padding:15px;">
+                            Discount
+                        </th>
+
+                        <th style="padding:15px;">
+                            Recommended Price
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for item in history %}
+
+                    <tr>
+
+                        <td style="padding:15px;">
+                            {{ item[0] }}
+                        </td>
+
+                        <td style="padding:15px;">
+                            ₹{{ item[1] }}
+                        </td>
+
+                        <td style="padding:15px;">
+                            {{ item[2] }}
+                        </td>
+
+                        <td style="padding:15px;">
+                            {{ item[3] }}
+                        </td>
+
+                        <td style="padding:15px;">
+                            {{ item[4] }}%
+                        </td>
+
+                        <td style="padding:15px;">
+                            ₹{{ item[5] }}
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        {% else %}
+
+        <!-- EMPTY HISTORY -->
+
+        <div class="extracted-text">
+
+            <h3>No prediction history yet</h3>
+
+            <p>
+                Your previous predictions will appear here.
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- FOOTER -->
+
+    <footer>
+
+        DynamicShelf • Reducing Food Waste Through Smart Dynamic Pricing
+
+    </footer>
+
+
+</div>
+
+
+</body>
+
+</html>
