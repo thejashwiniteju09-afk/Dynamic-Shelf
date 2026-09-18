@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request
 import pandas as pd
 import joblib
-import easyocr
 import os
 import re
 import sqlite3
@@ -27,6 +26,7 @@ def get_reader():
         return None
 
     if reader is None:
+        import easyocr
         reader = easyocr.Reader(["en"], gpu=False)
 
     return reader
