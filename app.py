@@ -19,7 +19,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 reader = easyocr.Reader(["en"])
 
 # Load ML model
-model = joblib.load("ml_model/dynamic_discount_model.pkl")
+model = joblib.load("ML_Model/dynamic_discount_model.pkl")
 
 
 # ==========================================
