@@ -10,6 +10,8 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
+USE_OCR = os.environ.get("USE_OCR", "true").lower() == "true"
+
 # Upload folder
 UPLOAD_FOLDER = "uploads"
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
@@ -20,6 +22,9 @@ reader = None
 
 def get_reader():
     global reader
+
+    if not USE_OCR:
+        return None
 
     if reader is None:
         reader = easyocr.Reader(["en"], gpu=False)
