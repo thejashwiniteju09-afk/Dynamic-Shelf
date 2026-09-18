@@ -15,8 +15,16 @@ UPLOAD_FOLDER = "uploads"
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# OCR Reader
-reader = easyocr.Reader(["en"])
+# OCR Reader - loaded only when needed
+reader = None
+
+def get_reader():
+    global reader
+
+    if reader is None:
+        reader = easyocr.Reader(["en"], gpu=False)
+
+    return reader
 
 # Load ML model
 model = joblib.load("ML_Model/dynamic_discount_model.pkl")
@@ -209,7 +217,11 @@ def scan():
 
     image.save(filepath)
 
+
+
     # OCR
+    reader=get_reader()
+
     result = reader.readtext(
         filepath,
         detail=0
@@ -394,10 +406,10 @@ def scan():
         # EXPIRY STATUS
         # ==========================================
 
-        if days_until_expiry > 30:
+        if days_left > 30:
             expiry_status = "Safe"
 
-        elif days_until_expiry > 7:
+        elif days_left > 7:
             expiry_status = "Expiring Soon"
 
         else:
