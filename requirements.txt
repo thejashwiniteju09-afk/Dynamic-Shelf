@@ -4,3 +4,4 @@ joblib
 easyocr
 scikit-learn
 gunicorn
+streamlit
